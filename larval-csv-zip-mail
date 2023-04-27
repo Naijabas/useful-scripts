@@ -1,0 +1,28 @@
+$csvData = [
+        ['Basit', 'Email'],
+        ['John Doe', 'john@example.com'],
+        ['Jane Doe', 'jane@example.com'],
+    ];
+
+    $csvString = '';
+    foreach ($csvData as $fields) {
+        $csvString .= implode(',', $fields) . "\n";
+    }
+
+    $tempFile = tempnam(sys_get_temp_dir(), 'csv_zip_');
+
+    $zip = new ZipArchive();
+    $zip->open($tempFile, ZipArchive::CREATE);
+    $zip->addFromString('data.csv', $csvString);
+    $zip->close();
+
+    Mail::raw('Body', function ($message) use ($tempFile) {
+        $message->to('basitibitoye@gmail.com')->subject('CSV Report')
+            ->attach($tempFile, [
+                'as' => 'data.zip',
+                'mime' => 'application/zip',
+            ]);
+    });
+
+// Delete the temporary file
+    unlink($tempFile);
